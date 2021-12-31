@@ -1,0 +1,20 @@
+{
+  "name": "fstop-notifications-twitch-chat",
+  "version": "0.0.1",
+  "description": "Generate fstop-notifications from twitch chat",
+  "main": "twitch.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "author": "Jonathan Gaull",
+  "license": "UNLICENSED",
+  "dependencies": {
+    "graphql": "^16.2.0",
+    "graphql-request": "^3.7.0",
+    "tmi.js": "^1.8.5"
+  },
+  "devDependencies": {
+    "dotenv": "^10.0.0"
+  }
+}
