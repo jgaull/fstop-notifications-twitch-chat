@@ -1,6 +1,15 @@
 require('dotenv').config()
 const tmi = require('tmi.js')
-const { request, gql } = require('graphql-request')
+const { gql, GraphQLClient } = require('graphql-request')
+const base64 = require('base-64')
+
+const usernameAndPassword = `${process.env.INTEGRATION_ID}:${process.env.INTEGRATION_KEY}`
+const authorization = `Basic ${base64.encode(usernameAndPassword)}`
+const graphQLClient = new GraphQLClient(process.env.INGEST_PATH, {
+	headers: {
+		Authorization: authorization,
+	}
+})
 
 let activeIntegrations
 
@@ -24,12 +33,12 @@ async function loadIntegrations() {
 		}
 	}
 
-	const response = await request(process.env.INGEST_PATH, query, variables)
+	const response = await graphQLClient.request(query, variables)
 	activeIntegrations = response.integrations.map(integration => {
 		return {
 			_id: integration._id,
 			user: integration.user,
-			integrationSettings: JSON.parse(integration.integrationSettings)
+			integrationSettings: integration.integrationSettings
 		}
 	})
 
@@ -95,7 +104,7 @@ async function onMessageHandler (target, context, message, self) {
 			}
 		}
 		
-		return request(process.env.INGEST_PATH, query, variables)
+		return graphQLClient.request(query, variables)
 	})
 
 	try {
