@@ -1,7 +1,8 @@
 require('dotenv').config()
 const tmi = require('tmi.js')
-const { gql, GraphQLClient } = require('graphql-request')
+const { gql, GraphQLClient, default: request } = require('graphql-request')
 const base64 = require('base-64')
+const axios = require('axios')
 
 const usernameAndPassword = `${process.env.INTEGRATION_ID}:${process.env.INTEGRATION_KEY}`
 const authorization = `Basic ${base64.encode(usernameAndPassword)}`
@@ -79,6 +80,21 @@ async function onMessageHandler (target, context, message, self) {
 	console.log(` self: ${JSON.stringify(self)}`)
 	*/
 
+	const channelName = target.substring(1)
+
+	let meta
+	try {
+		meta = await loadChannelMeta(channelName)
+	}
+	catch (error) {
+		console.log(`error fetching chatters for ${channelName}: ${error.message}`)
+	}
+
+	const data = {
+		context,
+		meta
+	}
+
 	const query = gql`
 	mutation CreateNotification($record: CreateOneNotificationInput!) {
 		createNotification(record: $record) {
@@ -88,7 +104,7 @@ async function onMessageHandler (target, context, message, self) {
 	`
 
 	const affectedIntegrations = activeIntegrations.filter(integration => {
-		return integration.integrationSettings.channelName.toLowerCase() == target.substring(1)
+		return integration.integrationSettings.channelName.toLowerCase() == channelName
 	})
 
 	const requests = affectedIntegrations.map(integration => {
@@ -97,7 +113,7 @@ async function onMessageHandler (target, context, message, self) {
 			record: {
 				title: context['display-name'],
 				type: "info",
-				data: JSON.stringify(context),
+				data: JSON.stringify(data),
 				integration: integration._id,
 				user: integration.user._id,
 				message
@@ -113,6 +129,15 @@ async function onMessageHandler (target, context, message, self) {
 	}
 	catch (error) {
 		console.log(`error sending notification from ${target} to the ingest server: ${error.stack}`)
+	}
+}
+
+async function loadChannelMeta(channel) {
+
+	const response = await axios.get(`http://tmi.twitch.tv/group/user/${channel}/chatters`)
+	
+	return {
+		chatters: response.data
 	}
 }
 
