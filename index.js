@@ -80,6 +80,8 @@ async function onMessageHandler (target, context, message, self) {
 	console.log(` self: ${JSON.stringify(self)}`)
 	*/
 
+	const originatedAt = Date.now()
+
 	const channelName = target.substring(1)
 
 	let meta
@@ -116,6 +118,7 @@ async function onMessageHandler (target, context, message, self) {
 				data: JSON.stringify(data),
 				integration: integration._id,
 				user: integration.user._id,
+				originatedAt,
 				message
 			}
 		}
@@ -135,7 +138,7 @@ async function onMessageHandler (target, context, message, self) {
 async function loadChannelMeta(channel) {
 
 	const response = await axios.get(`http://tmi.twitch.tv/group/user/${channel}/chatters`)
-	
+
 	return {
 		chatters: response.data
 	}
