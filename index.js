@@ -3,6 +3,7 @@ const tmi = require('tmi.js')
 const { gql, GraphQLClient, default: request } = require('graphql-request')
 const base64 = require('base-64')
 const axios = require('axios')
+const NodeCache = require( "node-cache" )
 
 const usernameAndPassword = `${process.env.INTEGRATION_ID}:${process.env.INTEGRATION_KEY}`
 const authorization = `Basic ${base64.encode(usernameAndPassword)}`
@@ -135,12 +136,22 @@ async function onMessageHandler (target, context, message, self) {
 	}
 }
 
+const chattersCache = new NodeCache({
+	stdTTL: 15 // sets the default TTL to 15 seconds
+})
+
 async function loadChannelMeta(channel) {
 
-	const response = await axios.get(`http://tmi.twitch.tv/group/user/${channel}/chatters`)
+	let chatters = chattersCache.get(channel)
+
+	if (!chatters) {
+		const response = await axios.get(`http://tmi.twitch.tv/group/user/${channel}/chatters`)
+		chatters = response.data
+		chattersCache.set(channel, chatters)
+	}
 
 	return {
-		chatters: response.data
+		chatters
 	}
 }
 
