@@ -10,10 +10,12 @@
   "author": "Jonathan Gaull",
   "license": "UNLICENSED",
   "dependencies": {
+    "axios": "^0.27.2",
     "base-64": "^1.0.0",
+    "dotenv": "^10.0.0",
     "graphql": "^16.2.0",
     "graphql-request": "^3.7.0",
-    "tmi.js": "^1.8.5",
-    "dotenv": "^10.0.0"
+    "node-cache": "^5.1.2",
+    "tmi.js": "^1.8.5"
   }
 }
